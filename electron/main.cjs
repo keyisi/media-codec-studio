@@ -7,7 +7,7 @@ const crypto = require("node:crypto");
 const isDev = !app.isPackaged;
 const activeJobs = new Map();
 const ffmpegPath = resolveToolPath("ffmpeg");
-const iconPath = path.join(__dirname, "../build/icon.ico");
+const iconPath = resolveIconPath();
 
 function createWindow() {
   Menu.setApplicationMenu(null);
@@ -441,11 +441,26 @@ function channelCount(label) {
 function resolveToolPath(toolName) {
   const extension = process.platform === "win32" ? ".exe" : "";
   const binaryName = `${toolName}${extension}`;
-  const packagedPath = path.join(process.resourcesPath, "bin", binaryName);
-  if (fs.existsSync(packagedPath)) return packagedPath;
+  const packagedPath = path.join(process.resourcesPath || "", "bin", binaryName);
+  if (process.resourcesPath && fs.existsSync(packagedPath)) return packagedPath;
 
-  const devPath = path.join(__dirname, "..", "node_modules", "@ffmpeg-installer", "win32-x64", binaryName);
+  const platformDir = resolveFfmpegPlatformDir();
+  const devPath = path.join(__dirname, "..", "node_modules", "@ffmpeg-installer", platformDir, binaryName);
   if (fs.existsSync(devPath)) return devPath;
 
   return binaryName;
+}
+
+function resolveFfmpegPlatformDir() {
+  if (process.platform === "win32") return "win32-x64";
+  if (process.platform === "darwin") {
+    return process.arch === "arm64" ? "darwin-arm64" : "darwin-x64";
+  }
+  return `linux-${process.arch === "arm64" ? "arm64" : "x64"}`;
+}
+
+function resolveIconPath() {
+  if (process.platform === "darwin") return path.join(__dirname, "../build/icon.icns");
+  if (process.platform === "win32") return path.join(__dirname, "../build/icon.ico");
+  return path.join(__dirname, "../build/icon.png");
 }

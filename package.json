@@ -12,6 +12,8 @@
     "dist": "npm run build && electron-builder"
   },
   "devDependencies": {
+    "@ffmpeg-installer/darwin-arm64": "^1.1.0",
+    "@ffmpeg-installer/darwin-x64": "^1.1.0",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@vitejs/plugin-react": "^4.3.1",
     "concurrently": "^8.2.2",
@@ -33,17 +35,13 @@
       "dist/**/*",
       "electron/**/*",
       "build/icon.ico",
+      "build/icon.icns",
+      "build/icon.png",
       "package.json"
     ],
     "asar": true,
     "compression": "maximum",
     "npmRebuild": false,
-    "extraResources": [
-      {
-        "from": "node_modules/@ffmpeg-installer/win32-x64/ffmpeg.exe",
-        "to": "bin/ffmpeg.exe"
-      }
-    ],
     "win": {
       "icon": "build/icon.ico",
       "target": [
@@ -54,13 +52,45 @@
           ]
         }
       ],
-      "artifactName": "${productName}-Setup-${version}.${ext}"
+      "artifactName": "${productName}-Setup-${version}.${ext}",
+      "extraResources": [
+        {
+          "from": "node_modules/@ffmpeg-installer/win32-x64/ffmpeg.exe",
+          "to": "bin/ffmpeg.exe"
+        }
+      ]
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true
+    },
+    "mac": {
+      "icon": "build/icon.icns",
+      "category": "public.app-category.video",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "extraResources": [
+        {
+          "from": "node_modules/@ffmpeg-installer/darwin-x64/ffmpeg",
+          "to": "bin/ffmpeg",
+          "arch": "x64"
+        },
+        {
+          "from": "node_modules/@ffmpeg-installer/darwin-arm64/ffmpeg",
+          "to": "bin/ffmpeg",
+          "arch": "arm64"
+        }
+      ]
     }
   }
 }
